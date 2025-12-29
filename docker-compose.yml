@@ -49,6 +49,7 @@ services:
       - OLLAMA_MODEL=${OLLAMA_MODEL:-gemma3:12b}
     env_file:
       - ./secret.env
+    restart: unless-stopped
 
   input-research:
     build: ./input-research
