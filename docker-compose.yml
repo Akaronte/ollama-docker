@@ -1,7 +1,7 @@
 services:
 
   ollama:
-    image: ollama/ollama:0.12.0
+    image: ollama/ollama:0.15.2
     container_name: ollama
     environment:
       - NVIDIA_VISIBLE_DEVICES=all  
@@ -22,7 +22,7 @@ services:
             - capabilities: [gpu] 
 
   open-webui:
-    image: ghcr.io/open-webui/open-webui:v0.6.34
+    image: ghcr.io/open-webui/open-webui:v0.7.2
     container_name: open-webui
     volumes:
       - ./open-webui:/app/backend/data
@@ -42,7 +42,7 @@ services:
     build: ./deep-research
     container_name: deep-research-agent
     ports:
-      - "8000:8000"
+      - "8077:8000"
     environment:
       # - BRAVE_API_KEY=${BRAVE_API_KEY}
       - OLLAMA_API_URL=http://ollama:11434/api
@@ -59,3 +59,28 @@ services:
     depends_on:
       - deep-research-agent
     restart: unless-stopped
+
+  libretranslate:
+    container_name: libretranslate
+    image: libretranslate/libretranslate:latest-cuda
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    command: --disable-web-ui
+    environment:
+     - LT_API_KEYS_DB_PATH=/app/db/api_keys.db
+     - LT_API_KEYS=True
+     - LT_REQ_LIMIT=120
+     - LT_UPDATE_MODELS=True
+     - LT_DEBUG=True
+     - PUID=root
+    volumes:
+     - ./libreTranslate/db:/app/db
+     - ./libreTranslate/data:/root/.local
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
